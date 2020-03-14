@@ -1,0 +1,2 @@
+{"/", coronerl_handler, []}.
+{"/hello", default_handler, [coronerl_controller, ['GET', 'POST', 'PUT']]}.
