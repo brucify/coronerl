@@ -1,6 +1,10 @@
 {"1.1.0",
 [{<<"cowboy">>,{pkg,<<"cowboy">>,<<"2.6.0">>},0},
  {<<"cowlib">>,{pkg,<<"cowlib">>,<<"2.7.3">>},1},
+ {<<"csv">>,
+  {git,"https://github.com/martin-torhage/csv.git",
+       {ref,"beef74fc628821854ed789a90ba137044f538848"}},
+  0},
  {<<"jiffy">>,{pkg,<<"jiffy">>,<<"1.0.1">>},0},
  {<<"ranch">>,{pkg,<<"ranch">>,<<"1.7.1">>},1}]}.
 [

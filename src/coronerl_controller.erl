@@ -8,7 +8,16 @@
         ]).
 
 get(_Params, _State) ->
-  Result = <<"hello world">>,
+  Result =
+    #{ months => coronerl_csv:match_dates()
+     , numbers =>
+         [ confirmed("Sweden")
+         , confirmed("Denmark")
+         , confirmed("Norway")
+         , confirmed("Finland")
+         , confirmed("Iceland")
+         ]
+     },
   {continue, Result}.
 
 post(_Params, _State) ->
@@ -22,3 +31,8 @@ put(_Params, _State) ->
 delete(_Params, _State) ->
   Result = <<"hello world">>,
   {continue, Result}.
+
+confirmed(String) ->
+  #{ country => list_to_binary(String)
+   , confirmed => coronerl_csv:match_country(String)
+   }.

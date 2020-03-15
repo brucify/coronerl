@@ -11,6 +11,7 @@
 
 start(_StartType, _StartArgs) ->
   coronerl_http:start(),
+  coronerl_csv:init(),
   coronerl_sup:start_link().
 
 stop(_State) ->
