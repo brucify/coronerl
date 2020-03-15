@@ -11,17 +11,17 @@ get(_Params, _State) ->
   Result =
     #{ months => coronerl_csv:match_dates()
      , numbers =>
-         [ confirmed("Sweden")
-         , confirmed("Denmark")
-         , confirmed("Norway")
-         , confirmed("Finland")
-         , confirmed("Iceland")
+         [ country("Sweden")
+         , country("Denmark")
+         , country("Norway")
+         , country("Finland")
+         , country("Iceland")
          ]
      },
   {continue, Result}.
 
 post(_Params, _State) ->
-  Result = <<"hello world">>,
+  Result = coronerl_csv:reset(),
   {continue, Result}.
 
 put(_Params, _State) ->
@@ -32,7 +32,9 @@ delete(_Params, _State) ->
   Result = <<"hello world">>,
   {continue, Result}.
 
-confirmed(String) ->
+country(String) ->
   #{ country => list_to_binary(String)
-   , confirmed => coronerl_csv:match_country(String)
+   , confirmed => coronerl_csv:match_country(confirmed, String)
+   , death     => coronerl_csv:match_country(death, String)
+   , recovered => coronerl_csv:match_country(recovered, String)
    }.
