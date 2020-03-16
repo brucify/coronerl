@@ -4,9 +4,13 @@
   {registered, []},
   {mod, {coronerl_app, []}},
   {applications,
-   [kernel,
-    stdlib,
-    cowboy
+   [ kernel
+   , stdlib
+   , cowboy
+   , cowlib
+   , ranch
+   , jiffy
+   , csv
    ]},
   {env,[]},
   {modules, []},
