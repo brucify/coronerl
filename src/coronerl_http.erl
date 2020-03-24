@@ -15,9 +15,15 @@ start() ->
   ]),
 
   {ok, _} = cowboy:start_clear(?HTTP_LISTENER,
-    [{port, 8080}],
+    [{port, http_port()}],
     #{env => #{dispatch => Dispatch}}
   ).
 
 stop() ->
   cowboy:stop_listener(?HTTP_LISTENER).
+
+http_port() ->
+  case application:get_env(http_port) of
+    {ok, Value} -> Value;
+    undefined -> 8080
+  end.

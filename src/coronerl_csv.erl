@@ -15,8 +15,8 @@
         , match_dates/0
         ]).
 
--define(FILENAME_CONFIRMED, "time_series_19-covid-Confirmed.csv").
--define(FILENAME_DEATH,     "time_series_19-covid-Deaths.csv").
+-define(FILENAME_CONFIRMED, "time_series_covid19_confirmed_global.csv").
+-define(FILENAME_DEATH,     "time_series_covid19_deaths_global.csv").
 -define(FILENAME_RECOVERED, "time_series_19-covid-Recovered.csv").
 
 init() ->
@@ -62,7 +62,7 @@ save(Tab, List) ->
 -spec match_country(confirmed|death|recovered, string()) -> [integer()].
 match_country(Tab, Country) ->
   Objs = ets:match_object(tab(Tab),{{Country, '_'},'_'}),
-  NumList = [lists:map(fun(X)->list_to_integer(X) end, Numbers) || {_, Numbers} <- Objs],
+  NumList = [lists:map(fun(X)->to_integer(X) end, Numbers) || {_, Numbers} <- Objs],
   lists:foldl(
     fun(L, Acc) ->
       lists:zipwith(fun(X,Y)-> X+Y end,
@@ -76,3 +76,6 @@ match_dates() ->
   Objs = ets:match_object(tab(confirmed),{{"Country/Region", "Province/State"},'_'}),
   [BinList] = [lists:map(fun(X)-> list_to_binary(X) end, Strings) || {_, Strings} <- Objs],
   BinList.
+
+to_integer("") -> 0;
+to_integer(X) -> list_to_integer(X).

@@ -104,8 +104,11 @@ call_controller(#{method := Method}= Req0, #state{ controller_module = Controlle
       EncodedBody = coronerl_json:encode(RespBody),
       Req1 = cowboy_req:set_resp_headers(#{}, Req0),
       case Method of
-        <<"GET">> -> {EncodedBody, Req1, State};
-        _Other    -> {true, cowboy_req:set_resp_body(EncodedBody, Req1), State}
+        <<"GET">> ->
+          Req2 = cowboy_req:set_resp_header(<<"access-control-allow-origin">>, <<"*">>, Req1),
+          {EncodedBody, Req2, State};
+        _Other    ->
+          {true, cowboy_req:set_resp_body(EncodedBody, Req1), State}
       end;
     {Status, RespBody, RespHeaders} ->
       Req1 = do_cowboy_reply(Req0, Status, RespBody, RespHeaders),

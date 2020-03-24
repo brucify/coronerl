@@ -23,6 +23,7 @@ get(_Params, _State) ->
          , country("Korea, South")
          , country("Japan")
          , country("United Kingdom")
+         , country("US")
          ]
      },
   {continue, Result}.
@@ -41,13 +42,17 @@ delete(_Params, _State) ->
 
 country(String) ->
   Confirmed = coronerl_csv:match_country(confirmed, String),
+  Deaths = coronerl_csv:match_country(death, String),
   Recovered = coronerl_csv:match_country(recovered, String),
   #{ country => list_to_binary(String)
    , confirmed       => Confirmed
-   , death           => coronerl_csv:match_country(death, String)
+   , death           => Deaths
    , recovered       => Recovered
-   , active          => lists:zipwith(fun(X,Y)->X-Y end, Confirmed, Recovered)
+   , active          => lists:zipwith(fun(X,Y)->X-Y end,
+                                      Confirmed,
+                                      lists:zipwith(fun(X,Y)->X+Y end, Deaths, Recovered))
    , confirmed_daily => daily_cases(Confirmed)
+   , death_daily     => daily_cases(Deaths)
    }.
 
 -spec daily_cases([integer()]) -> [integer()].
