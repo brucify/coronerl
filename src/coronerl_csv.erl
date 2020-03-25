@@ -13,6 +13,7 @@
         , reset/0
         , match_country/2
         , match_dates/0
+        , to_integer/1
         ]).
 
 -define(FILENAME_CONFIRMED, "time_series_covid19_confirmed_global.csv").
@@ -78,4 +79,6 @@ match_dates() ->
   BinList.
 
 to_integer("") -> 0;
-to_integer(X) -> list_to_integer(X).
+to_integer(null) -> 0;
+to_integer(X) when is_list(X) -> list_to_integer(X);
+to_integer(X) when is_integer(X) -> X.
