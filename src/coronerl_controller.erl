@@ -24,6 +24,12 @@ get(_Params, _State) ->
          , country("Japan")
          , country("United Kingdom")
          , country("US")
+         , country("Netherlands")
+         , country("Belgium")
+         , country("Poland")
+         , country("Iran")
+         , country("China")
+         , country("Russia")
          ]
      },
   {continue, Result}.
@@ -45,23 +51,27 @@ country(String) ->
     pad_with_nulls(coronerl_csv:match_country(confirmed, String),
                    coronerl_csv:match_country(death, String),
                    coronerl_csv:match_country(recovered, String)),
+  Active = lists:zipwith(
+    fun(X,Y) when X==null orelse Y==null -> null;
+       (X,Y)->coronerl_csv:to_integer(X)-coronerl_csv:to_integer(Y)
+    end,
+    ConfirmedPadded,
+    lists:zipwith(
+      fun(X,Y) when X==null orelse Y==null -> null;
+         (X,Y)->coronerl_csv:to_integer(X)+coronerl_csv:to_integer(Y)
+      end,
+      DeathsPadded, RecoveredPadded
+    )
+  ),
   #{ country => list_to_binary(String)
    , confirmed       => ConfirmedPadded
    , death           => DeathsPadded
    , recovered       => RecoveredPadded
-   , active          => lists:zipwith(fun(X,Y) when X==null orelse Y==null -> null;
-                                         (X,Y)->coronerl_csv:to_integer(X)-coronerl_csv:to_integer(Y)
-                                      end,
-                                      ConfirmedPadded,
-                                      lists:zipwith(
-                                        fun(X,Y) when X==null orelse Y==null -> null;
-                                           (X,Y)->coronerl_csv:to_integer(X)+coronerl_csv:to_integer(Y)
-                                        end,
-                                        DeathsPadded, RecoveredPadded
-                                      )
-                        )
+   , active          => Active
    , confirmed_daily => daily_cases(ConfirmedPadded)
    , death_daily     => daily_cases(DeathsPadded)
+   , recovered_daily => daily_cases(RecoveredPadded)
+   , net_daily       => daily_cases(Active)
    }.
 
 -spec daily_cases([integer()]) -> [integer()].
