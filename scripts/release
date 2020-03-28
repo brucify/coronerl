@@ -1,0 +1,25 @@
+#!/bin/bash
+PATH=$PATH:~/bin/rebar3
+
+VSN=${1?param missing - VSN}
+RELEASE_DIR=/home/bruce/coronerl/rel
+RELEASE=coronerl-${VSN}
+
+# build
+rm -rf {RELEASE}
+cd ${RELEASE_DIR} && tar -xvzf ${RELEASE}.tar && mv coronerl ${RELEASE}
+rm ${RELEASE_DIR}/${RELEASE}.tar
+cd ${RELEASE} && rm -rf _build && ./rebar3 as prod release
+
+# stop previous version
+${RELEASE_DIR}/coronerl-current/_build/prod/rel/coronerl/bin/coronerl ping
+${RELEASE_DIR}/coronerl-current/_build/prod/rel/coronerl/bin/coronerl stop
+cd ${RELEASE_DIR} && rm coronerl-current && ln -s ${RELEASE} coronerl-current
+
+# some smoke tests
+${RELEASE_DIR}/coronerl-current/_build/prod/rel/coronerl/bin/coronerl start
+${RELEASE_DIR}/coronerl-current/_build/prod/rel/coronerl/bin/coronerl ping
+
+# some release tests
+curl -X POST --url localhost:8080/hello --header 'Content-Type: application/json' --verbose
+curl -X GET --url localhost:8080/hello --header 'Content-Type: application/json' --verbose
