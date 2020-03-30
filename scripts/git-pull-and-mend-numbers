@@ -1,0 +1,17 @@
+#!/bin/bash
+CSV_REPO=/home/bruce/git/COVID-19/csse_covid_19_data/csse_covid_19_time_series
+DEATH_CSV=time_series_covid19_deaths_global.csv
+
+# reset & pull
+git reset --hard origin/master
+git pull origin master
+
+# mend the csv files
+echo "Mending ${DEATH_CSV}..."
+cd ${CSV_REPO}
+sed 's/5,0,1,1,1/0,0,0,0,0/g' ${DEATH_CSV} > haha.csv
+rm ${DEATH_CSV} && mv haha.csv ${DEATH_CSV}
+echo "Done."
+
+# update coronerl
+curl -X POST --url localhost:8080/hello --header 'Content-Type: application/json' --verbose
