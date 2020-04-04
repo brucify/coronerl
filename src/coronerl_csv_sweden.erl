@@ -33,7 +33,8 @@ read_csv() ->
   read_csv(tab(region), filename:join(file_path(),?FILENAME_SWEDEN_REGION)).
 
 file_path() ->
-  code:priv_dir(coronerl).
+  {ok, Path} = application:get_env(coronerl, sweden_csv_file_path),
+  Path.
 
 -spec read_csv(atom(), string()) -> [list()].
 read_csv(Tab, FilePath) ->

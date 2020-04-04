@@ -42,7 +42,7 @@ read_csv() ->
   read_csv(tab(recovered), filename:join(file_path(),?FILENAME_RECOVERED)).
 
 file_path() ->
-  {ok, Path} = application:get_env(coronerl, csv_file_path),
+  {ok, Path} = application:get_env(coronerl, global_csv_file_path),
   Path.
 
 %%%===================================================================
