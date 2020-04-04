@@ -39,7 +39,7 @@ file_path() ->
 -spec read_csv(atom(), string()) -> [list()].
 read_csv(Tab, FilePath) ->
   {ok, CsvBin} = file:read_file(FilePath),
-  List = csv:decode_binary(CsvBin),
+  List = csv:decode_binary(CsvBin, [{return, binary}]),
   save(Tab, List).
 
 %%%===================================================================
@@ -80,13 +80,13 @@ series(List0, Acc) ->
 -spec match_all_provinces_incremental() -> [{string(), [integer()]}].
 match_all_provinces_incremental() ->
   Objs = ets:match_object(tab(region), {'_','_'}),
-  Exclude = [ "Statistikdatum"
-            , "Kumulativa_intensivvardade"
-            , "Antal_intensivvardade"
-            , "Kumulativa_avlidna"
-            , "Antal_avlidna"
-            , "Kumulativa_fall"
-            , "Totalt_antal_fall"
+  Exclude = [ <<"Statistikdatum">>
+            , <<"Kumulativa_intensivvardade">>
+            , <<"Antal_intensivvardade">>
+            , <<"Kumulativa_avlidna">>
+            , <<"Antal_avlidna">>
+            , <<"Kumulativa_fall">>
+            , <<"Totalt_antal_fall">>
             ],
 
   NumList = [{Title, lists:map(fun(X)->to_integer(X) end, Numbers)} || {Title, Numbers} <- Objs
@@ -95,11 +95,12 @@ match_all_provinces_incremental() ->
 
 -spec match_dates() -> [binary()].
 match_dates() ->
-  Objs = ets:match_object(tab(region), {"Statistikdatum",'_'}),
-  [BinList] = [lists:map(fun(X)-> list_to_binary(X) end, Strings) || {_, Strings} <- Objs],
+  Objs = ets:match_object(tab(region), {<<"Statistikdatum">>,'_'}),
+  [BinList] = [Bins|| {_, Bins} <- Objs],
   lists:reverse(BinList).
 
 to_integer("") -> 0;
 to_integer(null) -> 0;
 to_integer(X) when is_list(X) -> list_to_integer(X);
+to_integer(X) when is_binary(X) -> binary_to_integer(X);
 to_integer(X) when is_integer(X) -> X.
