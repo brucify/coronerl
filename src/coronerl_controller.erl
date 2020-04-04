@@ -9,27 +9,39 @@
 
 get(_Params, _State) ->
   Result =
-    #{ months => coronerl_csv:match_dates()
+    #{ days => coronerl_csv:match_dates()
      , numbers =>
-         [ country("Sweden")
-         , country("Denmark")
-         , country("Norway")
-         , country("Finland")
-         , country("Iceland")
-         , country("France")
-         , country("Germany")
-         , country("Spain")
-         , country("Italy")
-         , country("Korea, South")
-         , country("Japan")
-         , country("United Kingdom")
-         , country("US")
-         , country("Netherlands")
-         , country("Belgium")
-         , country("Poland")
-         , country("Iran")
-         , country("China")
-         , country("Russia")
+         [ country("Sweden",         10099265)
+         , country("Denmark",         5792202)
+         , country("Norway",          5421241)
+         , country("Finland",         5540720)
+         , country("Iceland",          341243)
+         , country("United Kingdom", 67886011)
+         , country("Portugal",       10196709)
+         , country("Spain",          46754778)
+         , country("Italy",          60461826)
+         , country("France",         65273511)
+         , country("Belgium",        11589623)
+         , country("Netherlands",    17134872)
+         , country("Germany",        83783942)
+         , country("Switzerland",     8654622)
+         , country("Austria",         9006398)
+         , country("Slovenia",        2078938)
+         , country("Hungary",         9660351)
+         , country("Slovakia",        5459642)
+         , country("Czechia",        10708981)
+         , country("Poland",         37846611)
+         , country("Korea, South",   51269185)
+         , country("Japan",         126476461)
+         , country("US",            331002651)
+         , country("Canada",         37742154)
+         , country("Brazil",        212559417)
+         , country("Russia",        145934462)
+         %, country("India",        1380004385)
+         , country("China",        1439323776)
+         , country("South Africa",   59308690)
+         , country("Australia",      25499884)
+         , country("Iran",           83992949)
          ]
      },
   {continue, Result}.
@@ -46,11 +58,12 @@ delete(_Params, _State) ->
   Result = <<"hello world">>,
   {continue, Result}.
 
-country(String) ->
+-spec country(string(), integer()) -> map().
+country(CountryName, Population) ->
   {ConfirmedPadded, DeathsPadded, RecoveredPadded} =
-    pad_with_nulls(coronerl_csv:match_country(confirmed, String),
-                   coronerl_csv:match_country(death, String),
-                   coronerl_csv:match_country(recovered, String)),
+    pad_with_nulls(coronerl_csv:match_country(confirmed, CountryName),
+                   coronerl_csv:match_country(death,     CountryName),
+                   coronerl_csv:match_country(recovered, CountryName)),
   Active = lists:zipwith(
     fun(X,Y) when X==null orelse Y==null -> null;
        (X,Y)->coronerl_csv:to_integer(X)-coronerl_csv:to_integer(Y)
@@ -63,7 +76,7 @@ country(String) ->
       DeathsPadded, RecoveredPadded
     )
   ),
-  #{ country => list_to_binary(String)
+  #{ country => list_to_binary(CountryName)
    , confirmed       => ConfirmedPadded
    , death           => DeathsPadded
    , recovered       => RecoveredPadded
@@ -72,6 +85,7 @@ country(String) ->
    , death_daily     => daily_cases(DeathsPadded)
    , recovered_daily => daily_cases(RecoveredPadded)
    , net_daily       => daily_cases(Active)
+   , population      => Population
    }.
 
 -spec daily_cases([integer()]) -> [integer()].

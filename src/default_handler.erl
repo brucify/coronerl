@@ -67,6 +67,7 @@ handle_get(Req, State)->
   fold_steps(Req, State, [ fun parse_path_params/2
                          , fun parse_query_params/2
                          , fun parse_body_params/2
+                         , fun parse_headers/2
                          , fun type_check_params/2
                          , fun call_controller/2
                          ]).
@@ -123,6 +124,9 @@ call_controller(#{method := Method}= Req0, #state{ controller_module = Controlle
   end.
 
 type_check_params(Req, #state{request_params = Params}=State) ->
+  {continue, Req, State#state{request_params = Params}}.
+
+parse_headers(Req, #state{request_params = Params}=State) ->
   {continue, Req, State#state{request_params = Params}}.
 
 parse_body_params(#{}=Req0, #state{request_params = Params}=State) ->

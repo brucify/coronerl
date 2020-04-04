@@ -47,11 +47,13 @@ test:
 release: test
 	@$(REBAR3) as prod release
 
-deploy: clean-all
+deploy:
 	@:$(call check_defined, VSN)
+	mv $(CURDIR)/_build ..
 	cd .. && tar -cvzf ${RELEASE}.tar coronerl
 	cd .. && scp ${RELEASE}.tar ${SERVER_USER}@${SERVER_URL}:${SERVER_DIR}
 	cd .. && rm ${RELEASE}.tar
+	mv ../_build .
 	ssh amazon-linux-bruce "/home/bruce/coronerl/rel/release $(VSN)"
 
 # https://stackoverflow.com/questions/10858261/abort-makefile-if-variable-not-set
