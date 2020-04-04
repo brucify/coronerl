@@ -6,12 +6,12 @@
 %%% @end
 %%% Created : 14. Mar 2020 20:08
 %%%-------------------------------------------------------------------
--module(coronerl_csv).
+-module(coronerl_csv_global).
 
 %% API
 -export([ init/0
         , reset/0
-        , match_country/2
+        , match_country_cummulative/2
         , match_dates/0
         , to_integer/1
         ]).
@@ -45,6 +45,10 @@ file_path() ->
   {ok, Path} = application:get_env(coronerl, csv_file_path),
   Path.
 
+%%%===================================================================
+%%% csv format specfic code
+%%%===================================================================
+
 -spec read_csv(atom(), string()) -> [list()].
 read_csv(Tab, FilePath) ->
   {ok, CsvBin} = file:read_file(FilePath),
@@ -60,10 +64,12 @@ save(Tab, List) ->
   ),
   ets:insert(Tab, Objs).
 
--spec match_country(confirmed|death|recovered, string()) -> [integer()].
-match_country(Tab, Country) ->
+-spec match_country_cummulative(confirmed|death|recovered, string()) -> [integer()].
+match_country_cummulative(Tab, Country) ->
   Objs = ets:match_object(tab(Tab),{{Country, '_'},'_'}),
   NumList = [lists:map(fun(X)->to_integer(X) end, Numbers) || {_, Numbers} <- Objs],
+
+  %% In case multiple provinces in one country
   lists:foldl(
     fun(L, Acc) ->
       lists:zipwith(fun(X,Y)-> X+Y end,

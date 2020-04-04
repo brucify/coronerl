@@ -3,13 +3,11 @@
 %% API
 -export([ get/2
         , post/2
-        , put/2
-        , delete/2
         ]).
 
 get(_Params, _State) ->
   Result =
-    #{ days => coronerl_csv:match_dates()
+    #{ days => coronerl_csv_global:match_dates()
      , numbers =>
          [ country("Sweden",         10099265)
          , country("Denmark",         5792202)
@@ -47,51 +45,43 @@ get(_Params, _State) ->
   {continue, Result}.
 
 post(_Params, _State) ->
-  Result = coronerl_csv:reset(),
-  {continue, Result}.
-
-put(_Params, _State) ->
-  Result = <<"hello world">>,
-  {continue, Result}.
-
-delete(_Params, _State) ->
-  Result = <<"hello world">>,
+  Result = coronerl_csv_global:reset(),
   {continue, Result}.
 
 -spec country(string(), integer()) -> map().
 country(CountryName, Population) ->
   {ConfirmedPadded, DeathsPadded, RecoveredPadded} =
-    pad_with_nulls(coronerl_csv:match_country(confirmed, CountryName),
-                   coronerl_csv:match_country(death,     CountryName),
-                   coronerl_csv:match_country(recovered, CountryName)),
+    pad_with_nulls(coronerl_csv_global:match_country_cummulative(confirmed, CountryName),
+                   coronerl_csv_global:match_country_cummulative(death,     CountryName),
+                   coronerl_csv_global:match_country_cummulative(recovered, CountryName)),
   Active = lists:zipwith(
     fun(X,Y) when X==null orelse Y==null -> null;
-       (X,Y)->coronerl_csv:to_integer(X)-coronerl_csv:to_integer(Y)
+       (X,Y)-> coronerl_csv_global:to_integer(X)- coronerl_csv_global:to_integer(Y)
     end,
     ConfirmedPadded,
     lists:zipwith(
       fun(X,Y) when X==null orelse Y==null -> null;
-         (X,Y)->coronerl_csv:to_integer(X)+coronerl_csv:to_integer(Y)
+         (X,Y)-> coronerl_csv_global:to_integer(X)+ coronerl_csv_global:to_integer(Y)
       end,
       DeathsPadded, RecoveredPadded
     )
   ),
-  #{ country => list_to_binary(CountryName)
+  #{ name            => list_to_binary(CountryName)
    , confirmed       => ConfirmedPadded
    , death           => DeathsPadded
    , recovered       => RecoveredPadded
    , active          => Active
-   , confirmed_daily => daily_cases(ConfirmedPadded)
-   , death_daily     => daily_cases(DeathsPadded)
-   , recovered_daily => daily_cases(RecoveredPadded)
-   , net_daily       => daily_cases(Active)
+   , confirmed_daily => incremental(ConfirmedPadded)
+   , death_daily     => incremental(DeathsPadded)
+   , recovered_daily => incremental(RecoveredPadded)
+   , net_daily       => incremental(Active)
    , population      => Population
    }.
 
--spec daily_cases([integer()]) -> [integer()].
-daily_cases(L) ->
+-spec incremental([integer()]) -> [integer()].
+incremental(L) ->
   L1 = lists:sublist([0|L], length(L)),
-  lists:zipwith(fun(X,Y) -> coronerl_csv:to_integer(X)-coronerl_csv:to_integer(Y) end, L, L1).
+  lists:zipwith(fun(X,Y) -> coronerl_csv_global:to_integer(X)- coronerl_csv_global:to_integer(Y) end, L, L1).
 
 pad_with_nulls(L1, L2, L3) ->
   Null = null,
