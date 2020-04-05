@@ -13,6 +13,7 @@
 -export([ init/0
         , reset/0
         , match_all_provinces_incremental/0
+        , match_all_kumulativa/0
         , match_dates/0
         , to_integer/1
         ]).
@@ -91,6 +92,19 @@ match_all_provinces_incremental() ->
 
   NumList = [{Title, lists:map(fun(X)->to_integer(X) end, Numbers)} || {Title, Numbers} <- Objs
                                                                      , not lists:member(Title, Exclude)],
+  NumList.
+
+%% Kumulativa_fall
+%% Kumulativa_avlidna
+%% Kumulativa_intensivvardade
+-spec match_all_kumulativa() -> [{string(), [integer()]}].
+match_all_kumulativa() ->
+  Objs = ets:select(tab(region), [ { {<<"Kumulativa_fall">>,           '_'}, [], ['$_'] }
+                                 , { {<<"Kumulativa_avlidna">>,        '_'}, [], ['$_'] }
+                                 , { {<<"Kumulativa_intensivvardade">>,'_'}, [], ['$_'] }
+                                 ]),
+
+  NumList = [{Title, lists:map(fun(X)->to_integer(X) end, Numbers)} || {Title, Numbers} <- Objs],
   NumList.
 
 -spec match_dates() -> [binary()].

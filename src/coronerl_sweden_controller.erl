@@ -33,7 +33,9 @@
 get(_Params, _State) ->
   Result =
     #{ days => coronerl_csv_sweden:match_dates()
+      %% warning mixed keys under 'numbers'
      , numbers => provinces()
+               ++ death_vs_icu()
      },
   {continue, Result}.
 
@@ -51,6 +53,14 @@ provinces() ->
   || {Province, Integers} <- List
   ].
 
+death_vs_icu() ->
+  List = coronerl_csv_sweden:match_all_kumulativa(),
+  [ #{ name            => SerieName
+     , death_vs_icu    => lists:reverse(Integers)
+     }
+  || {SerieName, Integers} <- List
+  ].
+
 cummulative(Integers) ->
   cummulative(Integers, []).
 
@@ -59,5 +69,8 @@ cummulative([], Acc) ->
 cummulative([_|Rest]=List, Acc) ->
   cummulative(Rest, [lists:sum(List) | Acc]).
 
+-spec population(binary()) -> integer().
 population(ProvinceName) ->
-  proplists:get_value(unicode:characters_to_binary(ProvinceName), [{unicode:characters_to_binary(K), V} || {K,V} <- ?POPULATION]).
+  proplists:get_value(unicode:characters_to_binary(ProvinceName),
+    [{unicode:characters_to_binary(K), V} || {K,V} <- ?POPULATION]
+  ).
