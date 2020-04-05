@@ -27,6 +27,7 @@
   , {"Västra_Götaland",  1713907}
   , {"Örebro",            303096}
   , {"Östergötland",      462379}
+  , {"Riket",           10255102}
   ]
 ).
 
@@ -57,6 +58,7 @@ death_vs_icu() ->
   List = coronerl_csv_sweden:match_all_kumulativa(),
   [ #{ name            => SerieName
      , death_vs_icu    => lists:reverse(Integers)
+     , population      => proplists:get_value("Riket", ?POPULATION)
      }
   || {SerieName, Integers} <- List
   ].
