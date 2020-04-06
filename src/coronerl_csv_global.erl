@@ -66,14 +66,24 @@ save(Tab, List) ->
 
 -spec match_country_cummulative(confirmed|death|recovered, string()) -> [integer()].
 match_country_cummulative(Tab, Country) ->
-  Objs = ets:match_object(tab(Tab),{{Country, '_'},'_'}),
+  match_country_cummulative(Tab, Country, true).
+
+-spec match_country_cummulative(confirmed|death|recovered, string(), boolean()) -> [integer()].
+match_country_cummulative(Tab, Country, IncludeProvince) ->
+  MatchPattern =
+    case IncludeProvince of
+      %% In case multiple provinces in one country
+      true ->
+        {{Country, '_'},'_'};
+      false ->
+        {{Country,  []},'_'}
+    end,
+  Objs = ets:match_object(tab(Tab), MatchPattern),
   NumList = [lists:map(fun(X)->to_integer(X) end, Numbers) || {_, Numbers} <- Objs],
 
-  %% In case multiple provinces in one country
   lists:foldl(
     fun(L, Acc) ->
-      lists:zipwith(fun(X,Y)-> X+Y end,
-                    L, Acc)
+      lists:zipwith(fun(X,Y)-> X+Y end, L, Acc)
     end,
     hd(NumList), tl(NumList)
   ).
