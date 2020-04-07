@@ -13,6 +13,7 @@
         , reset/0
         , tab/1
         , match_country_cummulative/2
+        , match_country_cummulative/3
         , match_dates/0
         , to_integer/1
         ]).
@@ -70,14 +71,14 @@ match_country_cummulative(Tab, Country) ->
   match_country_cummulative(Tab, Country, true).
 
 -spec match_country_cummulative(confirmed|death|recovered, binary(), boolean()) -> [integer()].
-match_country_cummulative(Tab, Country, IncludeProvince) ->
+match_country_cummulative(Tab, Country, MergeProvinces) ->
   MatchPattern =
-    case IncludeProvince of
+    case MergeProvinces of
       %% In case multiple provinces in one country
       true ->
         {{Country, '_'},'_'};
       false ->
-        {{Country,  []},'_'}
+        {{Country,  <<>>},'_'}
     end,
   Objs = ets:match_object(tab(Tab), MatchPattern),
   case [lists:map(fun(X)->to_integer(X) end, Numbers) || {_, Numbers} <- Objs] of

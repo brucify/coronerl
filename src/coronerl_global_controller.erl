@@ -21,7 +21,7 @@ get(_Params, _State) ->
          , country(<<"Portugal">>)
          , country(<<"Spain">>)
          , country(<<"Italy">>)
-         , country(<<"France">>)
+         , country(<<"France">>, false)
          , country(<<"Belgium">>)
          , country(<<"Netherlands">>)
          , country(<<"Germany">>)
@@ -54,10 +54,14 @@ post(_Params, _State) ->
 
 -spec country(binary()) -> map().
 country(CountryName) ->
+  country(CountryName, true).
+
+-spec country(binary(), boolean()) -> map().
+country(CountryName, MergeProvinces) ->
   {ConfirmedPadded, DeathsPadded, RecoveredPadded} =
-    pad_with_nulls(coronerl_csv_global:match_country_cummulative(confirmed, CountryName),
-                   coronerl_csv_global:match_country_cummulative(death,     CountryName),
-                   coronerl_csv_global:match_country_cummulative(recovered, CountryName)),
+    pad_with_nulls(coronerl_csv_global:match_country_cummulative(confirmed, CountryName, MergeProvinces),
+                   coronerl_csv_global:match_country_cummulative(death,     CountryName, MergeProvinces),
+                   coronerl_csv_global:match_country_cummulative(recovered, CountryName, MergeProvinces)),
   Active = lists:zipwith(
     fun(X,Y) when X==null orelse Y==null -> null;
        (X,Y)-> coronerl_csv_global:to_integer(X)- coronerl_csv_global:to_integer(Y)
