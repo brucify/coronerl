@@ -11,6 +11,7 @@
 %% API
 -export([ init/0
         , reset/0
+        , tab/1
         , match_country_cummulative/2
         , match_dates/0
         , to_integer/1
@@ -52,7 +53,7 @@ file_path() ->
 -spec read_csv(atom(), string()) -> [list()].
 read_csv(Tab, FilePath) ->
   {ok, CsvBin} = file:read_file(FilePath),
-  List = csv:decode_binary(CsvBin),
+  List = csv:decode_binary(CsvBin, [{return, binary}]),
   save(Tab, List).
 
 save(Tab, List) ->
@@ -64,11 +65,11 @@ save(Tab, List) ->
   ),
   ets:insert(Tab, Objs).
 
--spec match_country_cummulative(confirmed|death|recovered, string()) -> [integer()].
+-spec match_country_cummulative(confirmed|death|recovered, binary()) -> [integer()].
 match_country_cummulative(Tab, Country) ->
   match_country_cummulative(Tab, Country, true).
 
--spec match_country_cummulative(confirmed|death|recovered, string(), boolean()) -> [integer()].
+-spec match_country_cummulative(confirmed|death|recovered, binary(), boolean()) -> [integer()].
 match_country_cummulative(Tab, Country, IncludeProvince) ->
   MatchPattern =
     case IncludeProvince of
@@ -79,22 +80,25 @@ match_country_cummulative(Tab, Country, IncludeProvince) ->
         {{Country,  []},'_'}
     end,
   Objs = ets:match_object(tab(Tab), MatchPattern),
-  NumList = [lists:map(fun(X)->to_integer(X) end, Numbers) || {_, Numbers} <- Objs],
-
-  lists:foldl(
-    fun(L, Acc) ->
-      lists:zipwith(fun(X,Y)-> X+Y end, L, Acc)
-    end,
-    hd(NumList), tl(NumList)
-  ).
+  case [lists:map(fun(X)->to_integer(X) end, Numbers) || {_, Numbers} <- Objs] of
+    [] -> [];
+    NumList ->
+      lists:foldl(
+        fun(L, Acc) ->
+          lists:zipwith(fun(X,Y)-> X+Y end, L, Acc)
+        end,
+        hd(NumList), tl(NumList)
+      )
+  end.
 
 -spec match_dates() -> [binary()].
 match_dates() ->
-  Objs = ets:match_object(tab(confirmed),{{"Country/Region", "Province/State"},'_'}),
-  [BinList] = [lists:map(fun(X)-> list_to_binary(X) end, Strings) || {_, Strings} <- Objs],
+  Objs = ets:match_object(tab(confirmed),{{<<"Country/Region">>, <<"Province/State">>}, '_'}),
+  [BinList] = [Bins || {_, Bins} <- Objs],
   BinList.
 
 to_integer("") -> 0;
 to_integer(null) -> 0;
 to_integer(X) when is_list(X) -> list_to_integer(X);
+to_integer(X) when is_binary(X) -> binary_to_integer(X);
 to_integer(X) when is_integer(X) -> X.

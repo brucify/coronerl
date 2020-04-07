@@ -5,42 +5,45 @@
         , post/2
         ]).
 
+-export([ country/1
+        ]).
+
 get(_Params, _State) ->
   Result =
     #{ days => coronerl_csv_global:match_dates()
      , numbers =>
-         [ country("Sweden",         10099265)
-         , country("Denmark",         5792202)
-         , country("Norway",          5421241)
-         , country("Finland",         5540720)
-         , country("Iceland",          341243)
-         , country("United Kingdom", 67886011)
-         , country("Portugal",       10196709)
-         , country("Spain",          46754778)
-         , country("Italy",          60461826)
-         , country("France",         65273511)
-         , country("Belgium",        11589623)
-         , country("Netherlands",    17134872)
-         , country("Germany",        83783942)
-         , country("Switzerland",     8654622)
-         , country("Austria",         9006398)
-         , country("Slovenia",        2078938)
-         , country("Hungary",         9660351)
-         , country("Slovakia",        5459642)
-         , country("Czechia",        10708981)
-         , country("Poland",         37846611)
-         , country("Korea, South",   51269185)
-         , country("Japan",         126476461)
-         , country("Taiwan*",        23816775)
-         , country("Singapore",       5850342)
-         , country("Canada",         37742154)
-         , country("Brazil",        212559417)
-         , country("Russia",        145934462)
-         %, country("India",        1380004385)
-         , country("China",        1439323776)
-         , country("South Africa",   59308690)
-         , country("Australia",      25499884)
-         , country("Iran",           83992949)
+         [ country(<<"Sweden">>)
+         , country(<<"Denmark">>)
+         , country(<<"Norway">>)
+         , country(<<"Finland">>)
+         , country(<<"Iceland">>)
+         , country(<<"United Kingdom">>)
+         , country(<<"Portugal">>)
+         , country(<<"Spain">>)
+         , country(<<"Italy">>)
+         , country(<<"France">>)
+         , country(<<"Belgium">>)
+         , country(<<"Netherlands">>)
+         , country(<<"Germany">>)
+         , country(<<"Switzerland">>)
+         , country(<<"Austria">>)
+         , country(<<"Slovenia">>)
+         , country(<<"Hungary">>)
+         , country(<<"Slovakia">>)
+         , country(<<"Czechia">>)
+         , country(<<"Poland">>)
+         , country(<<"Korea, South">>)
+         , country(<<"Japan">>)
+         , country(<<"Taiwan*">>)
+         , country(<<"Singapore">>)
+         , country(<<"Canada">>)
+         , country(<<"Brazil">>)
+         , country(<<"Russia">>)
+         %, country(<<"India">>)
+         , country(<<"China">>)
+         , country(<<"South Africa">>)
+         , country(<<"Australia">>)
+         , country(<<"Iran">>)
          ]
      },
   {continue, Result}.
@@ -49,8 +52,8 @@ post(_Params, _State) ->
   Result = coronerl_csv_global:reset(),
   {continue, Result}.
 
--spec country(string(), integer()) -> map().
-country(CountryName, Population) ->
+-spec country(binary()) -> map().
+country(CountryName) ->
   {ConfirmedPadded, DeathsPadded, RecoveredPadded} =
     pad_with_nulls(coronerl_csv_global:match_country_cummulative(confirmed, CountryName),
                    coronerl_csv_global:match_country_cummulative(death,     CountryName),
@@ -67,7 +70,7 @@ country(CountryName, Population) ->
       DeathsPadded, RecoveredPadded
     )
   ),
-  #{ name            => list_to_binary(CountryName)
+  #{ name            => CountryName
    , confirmed       => ConfirmedPadded
    , death           => DeathsPadded
    , recovered       => RecoveredPadded
@@ -76,7 +79,7 @@ country(CountryName, Population) ->
    , death_daily     => incremental(DeathsPadded)
    , recovered_daily => incremental(RecoveredPadded)
    , net_daily       => incremental(Active)
-   , population      => Population
+   , population      => coronerl_csv_population:match_country(CountryName)
    }.
 
 -spec incremental([integer()]) -> [integer()].

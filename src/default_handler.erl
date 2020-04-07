@@ -102,7 +102,7 @@ call_controller(#{method := Method}= Req0, #state{ controller_module = Controlle
 
   try Controller:Fun(Params, State) of
     {continue, RespBody} ->
-      EncodedBody = coronerl_json:encode(RespBody),
+      EncodedBody = coronerl_json:encode(to_binary_keys(RespBody)),
       Req1 = cowboy_req:set_resp_headers(#{}, Req0),
       case Method of
         <<"GET">> ->
@@ -112,7 +112,7 @@ call_controller(#{method := Method}= Req0, #state{ controller_module = Controlle
           {true, cowboy_req:set_resp_body(EncodedBody, Req1), State}
       end;
     {Status, RespBody, RespHeaders} ->
-      Req1 = do_cowboy_reply(Req0, Status, RespBody, RespHeaders),
+      Req1 = do_cowboy_reply(Req0, Status, to_binary_keys(RespBody), RespHeaders),
       {stop, Req1, State}
   catch
     exit:400 ->
@@ -143,7 +143,7 @@ parse_body_params(#{}=Req0, #state{request_params = Params}=State) ->
   end.
 
 parse_path_params(#{bindings := Bindings}=Req0, #state{request_params = Params}=State) ->
-  PathParams = atomize_keys(maps:to_list(Bindings)),
+  PathParams = maps:to_list(Bindings),
   {continue, Req0, State#state{request_params = PathParams++Params}}.
 
 parse_query_params(Req, #state{request_params = Params}=State) ->
@@ -189,6 +189,18 @@ method_to_fun(<<"DELETE">>) -> delete.
 atomize_keys(PropList) ->
   [{binary_to_existing_atom(K, latin1), V} || {K, V} <- PropList].
 
+to_binary_keys(Map) when is_map(Map) ->
+  maps:fold(
+    fun(K, V, Acc) when is_map(V) ->
+         Acc#{ to_binary(K) => to_binary_keys(V)};
+       (K, V, Acc) ->
+         Acc#{ to_binary(K) => V }
+    end,
+    #{}, Map
+  );
+to_binary_keys(Other) ->
+  Other.
+
 read_body(Req0) ->
   case read_body(Req0, <<>>) of
     {ok, <<>>, Req1}    -> {ok, <<"{}">>, Req1};
@@ -216,3 +228,12 @@ maybe_add_plain_text_body(Body, ReqParams, Req0) ->
     <<"application/json">> -> ReqParams;
     <<"text/plain">>       -> [{body, Body}| ReqParams]
   end.
+
+to_binary(X) when is_integer(X) ->
+  integer_to_binary(X);
+to_binary(X) when is_list(X) ->
+  list_to_binary(X);
+to_binary(X) when is_atom(X) ->
+  atom_to_binary(X, utf8);
+to_binary(X) when is_binary(X) ->
+  X.

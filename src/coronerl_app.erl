@@ -13,6 +13,7 @@ start(_StartType, _StartArgs) ->
   coronerl_http:start(),
   coronerl_csv_global:init(),
   coronerl_csv_sweden:init(),
+  coronerl_csv_population:init(),
   coronerl_sup:start_link().
 
 stop(_State) ->
