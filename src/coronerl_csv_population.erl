@@ -150,7 +150,7 @@ match_country(CountryJHU) ->
 
 country_name_diff() ->
   L1 = ets:select(coronerl_csv_global:tab(confirmed), [{{{'$1','_'},'_'}, [],['$1']}]), % Johns Hopkins
-  L2 = ets:select(tab(worldometers),                  [{{'$1','_'}, [],['$1']}]), % Worldometers
+  L2 = ets:select(tab(worldometers),                  [{{'$1',      '_'}, [],['$1']}]), % Worldometers
   Diff1 = lists:usort(L2) -- lists:usort(L1),
   Diff2 = lists:usort(L1) -- lists:usort(L2),
   Diff1 ++ Diff2.

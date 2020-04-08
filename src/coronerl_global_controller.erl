@@ -36,6 +36,7 @@ get(_Params, _State) ->
          , country(<<"Japan">>)
          , country(<<"Taiwan*">>)
          , country(<<"Singapore">>)
+         , country(<<"US">>)
          , country(<<"Canada">>)
          , country(<<"Brazil">>)
          , country(<<"Russia">>)
