@@ -1,4 +1,4 @@
--module(coronerl_global_controller_id).
+-module(coronerl_global_id_controller).
 
 %% API
 -export([ get/2
@@ -10,7 +10,7 @@ get(Params, _State) ->
     case coronerl_csv_global:match_country_cummulative(confirmed, CountryName) of
       [] -> #{};
       _  -> #{ days => coronerl_csv_global:match_dates()
-             , numbers => [ coronerl_global_controller:country(CountryName) ]
+             , numbers => [ coronerl_global:country(CountryName) ]
              }
     end,
   {continue, Result}.
