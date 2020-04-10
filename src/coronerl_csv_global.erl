@@ -12,9 +12,12 @@
 -export([ init/0
         , reset/0
         , tab/1
+        , lookup_country/1
+        , all_country_ids/0
         , match_country_cummulative/2
         , match_country_cummulative/3
         , match_dates/0
+        , select_all_countries/0
         , to_integer/1
         ]).
 
@@ -26,17 +29,20 @@ init() ->
   ets:new(tab(confirmed),  [named_table, ordered_set, public]),
   ets:new(tab(death),      [named_table, ordered_set, public]),
   ets:new(tab(recovered),  [named_table, ordered_set, public]),
+  ets:new(tab(id),         [named_table, ordered_set, public]),
   read_csv().
 
 reset() ->
   ets:delete_all_objects(tab(confirmed)),
   ets:delete_all_objects(tab(death)),
   ets:delete_all_objects(tab(recovered)),
+  ets:delete_all_objects(tab(id)),
   read_csv().
 
 tab(confirmed) -> list_to_atom(atom_to_list(?MODULE)++"_confirmed");
 tab(death)     -> list_to_atom(atom_to_list(?MODULE)++"_death");
-tab(recovered) -> list_to_atom(atom_to_list(?MODULE)++"_recovered").
+tab(recovered) -> list_to_atom(atom_to_list(?MODULE)++"_recovered");
+tab(id)        -> list_to_atom(atom_to_list(?MODULE)++"_id").
 
 read_csv() ->
   read_csv(tab(confirmed), filename:join(file_path(),?FILENAME_CONFIRMED)),
@@ -51,11 +57,13 @@ file_path() ->
 %%% csv format specfic code
 %%%===================================================================
 
--spec read_csv(atom(), string()) -> [list()].
+-spec read_csv(atom(), string()) -> ok.
 read_csv(Tab, FilePath) ->
   {ok, CsvBin} = file:read_file(FilePath),
   List = csv:decode_binary(CsvBin, [{return, binary}]),
-  save(Tab, List).
+  save(Tab, List),
+  save_country_ids(),
+  ok.
 
 save(Tab, List) ->
   Objs = lists:foldl(
@@ -65,6 +73,19 @@ save(Tab, List) ->
     [], List
   ),
   ets:insert(Tab, Objs).
+
+save_country_ids() ->
+  L1 = lists:seq(1, length(coronerl_csv_global:select_all_countries()), 1),
+  L2 = select_all_countries(),
+  Objs = lists:zip(L1, L2),
+  ets:insert(tab(id), Objs).
+
+-spec lookup_country(integer()) -> binary() | undefined.
+lookup_country(CountryId) ->
+  case ets:lookup(tab(id), CountryId) of
+    []             -> undefined;
+    [{_, Country}] -> Country
+  end.
 
 -spec match_country_cummulative(confirmed|death|recovered, binary()) -> [integer()].
 match_country_cummulative(Tab, Country) ->
@@ -97,6 +118,19 @@ match_dates() ->
   Objs = ets:match_object(tab(confirmed),{{<<"Country/Region">>, <<"Province/State">>}, '_'}),
   [BinList] = [Bins || {_, Bins} <- Objs],
   BinList.
+
+-spec select_all_countries() -> [binary()].
+select_all_countries() ->
+  lists:usort(ets:select(tab(confirmed),[
+    { {{'$1', '_'}, '_'}
+    , []
+    , ['$1']
+    }
+  ])).
+
+-spec all_country_ids() -> [{integer(), binary()}].
+all_country_ids() ->
+  ets:match_object(tab(id), {'_', '_'}).
 
 to_integer("") -> 0;
 to_integer(null) -> 0;

@@ -1,5 +1,4 @@
 {"/",              coronerl_handler, []}.
 {"/global",        default_handler, [coronerl_global_controller,        ['GET', 'POST']]}.
-{"/global/preset", default_handler, [coronerl_global_preset_controller, ['GET']]}.
 {"/global/:id",    default_handler, [coronerl_global_id_controller,     ['GET']]}.
 {"/sweden",        default_handler, [coronerl_sweden_controller,        ['GET', 'POST']]}.
