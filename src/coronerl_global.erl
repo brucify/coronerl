@@ -12,6 +12,8 @@
 %% API
 -export([ country/1
         , country/2
+        , active/3
+        , incremental/1
         ]).
 
 -spec country(binary()) -> map().
@@ -24,18 +26,8 @@ country(CountryName, MergeProvinces) ->
     pad_with_nulls(coronerl_csv_global:match_country_cummulative(confirmed, CountryName, MergeProvinces),
                    coronerl_csv_global:match_country_cummulative(death,     CountryName, MergeProvinces),
                    coronerl_csv_global:match_country_cummulative(recovered, CountryName, MergeProvinces)),
-  Active = lists:zipwith(
-    fun(X,Y) when X==null orelse Y==null -> null;
-      (X,Y)-> coronerl_csv_global:to_integer(X)- coronerl_csv_global:to_integer(Y)
-    end,
-    ConfirmedPadded,
-    lists:zipwith(
-      fun(X,Y) when X==null orelse Y==null -> null;
-        (X,Y)-> coronerl_csv_global:to_integer(X)+ coronerl_csv_global:to_integer(Y)
-      end,
-      DeathsPadded, RecoveredPadded
-    )
-  ),
+  Active = active(ConfirmedPadded, DeathsPadded, RecoveredPadded),
+
   #{ name            => CountryName
    , confirmed       => ConfirmedPadded
    , death           => DeathsPadded
@@ -47,6 +39,20 @@ country(CountryName, MergeProvinces) ->
    , net_daily       => incremental(Active)
    , population      => coronerl_csv_population:match_country(CountryName)
    }.
+
+active(ConfirmedPadded, DeathsPadded, RecoveredPadded) ->
+  lists:zipwith(
+    fun(X, Y) when X == null orelse Y == null -> null;
+       (X, Y) -> coronerl_csv_global:to_integer(X) - coronerl_csv_global:to_integer(Y)
+    end,
+    ConfirmedPadded,
+    lists:zipwith(
+      fun(X, Y) when X == null orelse Y == null -> null;
+        (X, Y) -> coronerl_csv_global:to_integer(X) + coronerl_csv_global:to_integer(Y)
+      end,
+      DeathsPadded, RecoveredPadded
+    )
+  ).
 
 -spec incremental([integer()]) -> [integer()].
 incremental(L) ->

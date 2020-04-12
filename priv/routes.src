@@ -2,3 +2,4 @@
 {"/global",        default_handler, [coronerl_global_controller,        ['GET', 'POST']]}.
 {"/global/:id",    default_handler, [coronerl_global_id_controller,     ['GET']]}.
 {"/sweden",        default_handler, [coronerl_sweden_controller,        ['GET', 'POST']]}.
+{"/poland",        default_handler, [coronerl_poland_controller,        ['GET', 'POST']]}.
