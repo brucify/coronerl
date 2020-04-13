@@ -10,11 +10,20 @@
 -author("bruce").
 
 %% API
--export([ country/1
+-export([ all_countries/0
+        , country/1
         , country/2
         , active/3
         , incremental/1
         ]).
+
+-spec all_countries() -> map().
+all_countries() ->
+  [ #{ id   => integer_to_binary(K)
+     , name => V
+     }
+    || {K, V} <- coronerl_csv_global:all_country_ids()
+  ].
 
 -spec country(binary()) -> map().
 country(CountryName) ->

@@ -8,12 +8,7 @@
 get(_Params, _State) ->
   Result =
     #{ days => coronerl_csv_global:match_dates()
-     , countries =>
-        [ #{ id   => integer_to_binary(K)
-           , name => V
-           }
-        || {K, V} <- coronerl_csv_global:all_country_ids()
-        ]
+     , countries => coronerl_global:all_countries()
      , numbers =>
          [ coronerl_global:country(<<"Sweden">>)
          , coronerl_global:country(<<"Denmark">>)
