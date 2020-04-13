@@ -37,7 +37,8 @@ country(CountryName, MergeProvinces) ->
    , death_daily     => incremental(DeathsPadded)
    , recovered_daily => incremental(RecoveredPadded)
    , net_daily       => incremental(Active)
-   , population      => coronerl_csv_population:match_country(CountryName)
+   , population      => coronerl_csv_worldometers:match_country_population(CountryName)
+   , land_area       => coronerl_csv_worldometers:match_country_land_area(CountryName)
    }.
 
 active(ConfirmedPadded, DeathsPadded, RecoveredPadded) ->
