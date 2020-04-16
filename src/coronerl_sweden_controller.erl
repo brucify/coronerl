@@ -58,6 +58,7 @@ death_vs_icu() ->
   List = coronerl_csv_sweden:match_all_kumulativa(),
   [ #{ name            => SerieName
      , death_vs_icu    => lists:reverse(Integers)
+     , death_vs_icu_daily => coronerl_global:incremental(lists:reverse(Integers))
      , population      => proplists:get_value("Riket", ?POPULATION)
      }
   || {SerieName, Integers} <- List
