@@ -121,12 +121,14 @@ match_dates() ->
 
 -spec select_all_countries() -> [binary()].
 select_all_countries() ->
-  lists:usort(ets:select(tab(confirmed),[
-    { {{'$1', '_'}, '_'}
-    , []
-    , ['$1']
-    }
-  ])).
+  lists:filter(fun(X) -> X /= <<"Country/Region">> end,
+    lists:usort(ets:select(tab(confirmed),[
+      { {{'$1', '_'}, '_'}
+      , []
+      , ['$1']
+      }
+    ]))
+  ).
 
 -spec all_country_ids() -> [{integer(), binary()}].
 all_country_ids() ->
