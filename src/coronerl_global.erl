@@ -15,6 +15,7 @@
         , country/2
         , active/3
         , incremental/1
+        , pad_with_nulls/1
         ]).
 
 -spec all_countries() -> map().
@@ -31,10 +32,10 @@ country(CountryName) ->
 
 -spec country(binary(), boolean()) -> map().
 country(CountryName, MergeProvinces) ->
-  {ConfirmedPadded, DeathsPadded, RecoveredPadded} =
-    pad_with_nulls(coronerl_csv_global:match_country_cummulative(confirmed, CountryName, MergeProvinces),
-                   coronerl_csv_global:match_country_cummulative(death,     CountryName, MergeProvinces),
-                   coronerl_csv_global:match_country_cummulative(recovered, CountryName, MergeProvinces)),
+  [ConfirmedPadded, DeathsPadded, RecoveredPadded] =
+    pad_with_nulls([coronerl_csv_global:match_country_cummulative(confirmed, CountryName, MergeProvinces),
+                    coronerl_csv_global:match_country_cummulative(death,     CountryName, MergeProvinces),
+                    coronerl_csv_global:match_country_cummulative(recovered, CountryName, MergeProvinces)]),
   Active = active(ConfirmedPadded, DeathsPadded, RecoveredPadded),
 
   #{ name            => CountryName
@@ -69,10 +70,13 @@ incremental(L) ->
   L1 = lists:sublist([0|L], length(L)),
   lists:zipwith(fun(X,Y) -> coronerl_csv_global:to_integer(X)- coronerl_csv_global:to_integer(Y) end, L, L1).
 
-pad_with_nulls(L1, L2, L3) ->
+pad_with_nulls(List) ->
   Null = null,
-  MaxLen = lists:max([length(L1),length(L2),length(L3)]),
-  { lists:append(L1, [Null || _ <- lists:seq(1, MaxLen-length(L1), 1)])
-  , lists:append(L2, [Null || _ <- lists:seq(1, MaxLen-length(L2), 1)])
-  , lists:append(L3, [Null || _ <- lists:seq(1, MaxLen-length(L3), 1)])
-  }.
+  MaxLen = lists:max([ length(L) || L <- List ]),
+  lists:foldr(
+    fun(L, Acc) ->
+      [ lists:append(L, [Null || _ <- lists:seq(1, MaxLen-length(L), 1)])
+      | Acc ]
+    end,
+    [], List
+  ).
