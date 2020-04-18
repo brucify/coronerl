@@ -1,4 +1,4 @@
--module(coronerl_sweden_controller).
+-module(coronerl_controller_sweden).
 
 %% API
 -export([ get/2

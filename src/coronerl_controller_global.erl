@@ -1,4 +1,4 @@
--module(coronerl_global_controller).
+-module(coronerl_controller_global).
 
 %% API
 -export([ get/2
