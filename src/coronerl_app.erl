@@ -15,6 +15,7 @@ start(_StartType, _StartArgs) ->
   coronerl_csv_sweden:init(),
   coronerl_csv_worldometers:init(),
   coronerl_csv_poland:init(),
+  coronerl_csv_usa:init(),
   coronerl_sup:start_link().
 
 stop(_State) ->
