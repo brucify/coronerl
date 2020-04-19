@@ -31,6 +31,31 @@
   ]
 ).
 
+-define(LAND_AREA,
+  [ {"Stockholm", 6513.83}
+  , {"Uppsala", 8189.28}
+  , {"Södermanland", 6071.83}
+  , {"Östergötland", 10557.43}
+  , {"Jönköping", 10436.45}
+  , {"Kronoberg", 8423.28}
+  , {"Kalmar", 11159.80}
+  , {"Gotland", 3134.44}
+  , {"Blekinge", 2931.25}
+  , {"Skåne", 10965.04}
+  , {"Halland", 5426.59}
+  , {"Västra_Götaland", 23800.38}
+  , {"Värmland", 17519.24}
+  , {"Örebro", 8503.99}
+  , {"Västmanland", 5117.28}
+  , {"Dalarna", 28030.12}
+  , {"Gävleborg", 18113.25}
+  , {"Västernorrland", 21548.49}
+  , {"Jämtland", 48935.24}
+  , {"Västerbotten", 54664.43}
+  , {"Norrbotten", 97241.87}
+  ]
+).
+
 get(_Params, _State) ->
   Result =
     #{ days => coronerl_csv_sweden:match_dates()
@@ -49,7 +74,8 @@ provinces() ->
   [ #{ name            => Province
      , confirmed_daily => lists:reverse(Integers)
      , confirmed       => cummulative(Integers)
-     , population      => population(Province)
+     , population      => get_value(Province, ?POPULATION)
+     , land_area       => get_value(Province, ?LAND_AREA)
      }
   || {Province, Integers} <- List
   ].
@@ -60,6 +86,7 @@ death_vs_icu() ->
      , death_vs_icu    => lists:reverse(Integers)
      , death_vs_icu_daily => coronerl_global:incremental(lists:reverse(Integers))
      , population      => proplists:get_value("Riket", ?POPULATION)
+     , land_area       => lists:sum([X || {_, X} <- ?LAND_AREA])
      }
   || {SerieName, Integers} <- List
   ].
@@ -72,8 +99,9 @@ cummulative([], Acc) ->
 cummulative([_|Rest]=List, Acc) ->
   cummulative(Rest, [lists:sum(List) | Acc]).
 
--spec population(binary()) -> integer().
-population(ProvinceName) ->
+%% Do characters_to_binary on both keys
+-spec get_value(binary(), [{binary(), number()}]) -> integer().
+get_value(ProvinceName, Proplist) ->
   proplists:get_value(unicode:characters_to_binary(ProvinceName),
-    [{unicode:characters_to_binary(K), V} || {K,V} <- ?POPULATION]
+    [{unicode:characters_to_binary(K), V} || {K,V} <- Proplist]
   ).

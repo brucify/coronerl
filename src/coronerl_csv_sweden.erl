@@ -78,7 +78,7 @@ series(List0, Acc) ->
 %%  ] = lists:reverse(Rest0),
 %%  lists:reverse(Rest1).
 
--spec match_all_provinces_incremental() -> [{string(), [integer()]}].
+-spec match_all_provinces_incremental() -> [{binary(), [integer()]}].
 match_all_provinces_incremental() ->
   Objs = ets:match_object(tab(region), {'_','_'}),
   Exclude = [ <<"Statistikdatum">>
@@ -90,9 +90,9 @@ match_all_provinces_incremental() ->
             , <<"Totalt_antal_fall">>
             ],
 
-  NumList = [{Title, lists:map(fun(X)->to_integer(X) end, Numbers)} || {Title, Numbers} <- Objs
-                                                                     , not lists:member(Title, Exclude)],
-  NumList.
+  KVs = [{Title, lists:map(fun(X)->to_integer(X) end, Numbers)} || {Title, Numbers} <- Objs
+                                                                 , not lists:member(Title, Exclude)],
+  KVs.
 
 %% Kumulativa_fall
 %% Kumulativa_avlidna
