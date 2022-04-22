@@ -21,6 +21,8 @@
         , to_integer/1
         ]).
 
+%% CSV data located at
+%% https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series
 -define(FILENAME_CONFIRMED, "time_series_covid19_confirmed_global.csv").
 -define(FILENAME_DEATH,     "time_series_covid19_deaths_global.csv").
 -define(FILENAME_RECOVERED, "time_series_covid19_recovered_global.csv").

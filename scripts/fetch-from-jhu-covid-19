@@ -1,0 +1,34 @@
+#!/bin/bash
+# John Hopkins University repo https://github.com/CSSEGISandData/COVID-19
+GIT_RAW_URL="https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"
+DEATH_CSV=time_series_covid19_deaths_global.csv
+
+# create dir if needed
+mkdir -p csse_covid_19_data/csse_covid_19_time_series
+
+# fetch csv files
+cd csse_covid_19_data/csse_covid_19_time_series
+curl "${GIT_RAW_URL}/time_series_covid19_confirmed_US.csv" -J -O
+curl "${GIT_RAW_URL}/time_series_covid19_deaths_US.csv" -J -O
+curl "${GIT_RAW_URL}/time_series_covid19_confirmed_global.csv" -J -O
+curl "${GIT_RAW_URL}/time_series_covid19_deaths_global.csv" -J -O
+curl "${GIT_RAW_URL}/time_series_covid19_recovered_global.csv" -J -O
+cd -
+
+# mend the csv files
+echo "Mending ${DEATH_CSV}..."
+cd ${CSV_DIR}
+
+# Iceland incorrect death dips
+sed 's/5,0,1,1,1/0,0,0,0,0/g' ${DEATH_CSV} > haha.csv
+rm ${DEATH_CSV} && mv haha.csv ${DEATH_CSV}
+
+# Slovakia death dips
+sed 's/0,0,1,1,1,1,0,0/0,0,0,0,0,0,0,0/g' ${DEATH_CSV} > haha.csv
+rm ${DEATH_CSV} && mv haha.csv ${DEATH_CSV}
+
+echo "Done."
+
+# update coronerl
+curl -X POST --url localhost:8080/global --header 'Content-Type: application/json' --verbose
+curl -X POST --url localhost:8080/usa --header 'Content-Type: application/json' --verbose

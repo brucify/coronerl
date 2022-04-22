@@ -1,5 +1,9 @@
 #!/bin/bash
-PATH=$PATH:~/bin/rebar3
+# release script that does these things:
+# 1. unpacks tar on prod machine
+# 2. builds the release
+# 3. stops the running app with old version
+# 4. starts the app with new version
 
 VSN=${1?param missing - VSN}
 RELEASE_DIR=/home/bruce/coronerl/rel
@@ -21,5 +25,9 @@ ${RELEASE_DIR}/coronerl-current/_build/prod/rel/coronerl/bin/coronerl start
 ${RELEASE_DIR}/coronerl-current/_build/prod/rel/coronerl/bin/coronerl ping
 
 # some release tests
-curl -X POST --url localhost:8080/hello --header 'Content-Type: application/json' --verbose
-curl -X GET --url localhost:8080/hello --header 'Content-Type: application/json' --verbose
+curl -X POST --url localhost:8080/global --header 'Content-Type: application/json' --verbose
+curl -X GET --url localhost:8080/global --header 'Content-Type: application/json' --verbose
+curl -X POST --url localhost:8080/sweden --header 'Content-Type: application/json' --verbose
+curl -X GET --url localhost:8080/sweden --header 'Content-Type: application/json' --verbose
+curl -X POST --url localhost:8080/usa --header 'Content-Type: application/json' --verbose
+curl -X GET --url localhost:8080/usa --header 'Content-Type: application/json' --verbose

@@ -13,8 +13,12 @@ RUN amazon-linux-extras install java-openjdk11
 
 RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.7.7 && \
     . $HOME/.asdf/asdf.sh && \
-    asdf plugin add erlang && \
-    asdf install erlang 22.3 && \
+    asdf plugin add erlang
+
+RUN . $HOME/.asdf/asdf.sh && \
+    asdf install erlang 22.3
+
+RUN . $HOME/.asdf/asdf.sh && \
     asdf global erlang 22.3
 
 # Set working directory

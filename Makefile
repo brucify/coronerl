@@ -1,7 +1,7 @@
 REBAR3_URL=https://s3.amazonaws.com/rebar3/rebar3
 RELEASE=coronerl-${VSN}
-SERVER_DIR=/home/bruce/coronerl/rel/
-SERVER_URL=ec2-52-59-237-65.eu-central-1.compute.amazonaws.com
+SERVER_DIR=/home/bruce/coronerl/rel
+SERVER_URL=ec2-3-72-11-195.eu-central-1.compute.amazonaws.com
 SERVER_USER=bruce
 
 ifeq ($(wildcard rebar3),rebar3)
@@ -47,6 +47,9 @@ test:
 release: test
 	@$(REBAR3) as prod release
 
+# Packs source code into tar, scp to EC2 instance,
+# then runs the release script located at /scripts/release
+# on EC2
 deploy:
 	@:$(call check_defined, VSN)
 	mv $(CURDIR)/_build ..
@@ -54,7 +57,7 @@ deploy:
 	cd .. && scp ${RELEASE}.tar ${SERVER_USER}@${SERVER_URL}:${SERVER_DIR}
 	cd .. && rm ${RELEASE}.tar
 	mv ../_build .
-	ssh amazon-linux-bruce "/home/bruce/coronerl/rel/release $(VSN)"
+	ssh amazon-linux-bruce "${SERVER_DIR}/release ${VSN}"
 
 # https://stackoverflow.com/questions/10858261/abort-makefile-if-variable-not-set
 # Check that given variables are set and all have non-empty values,

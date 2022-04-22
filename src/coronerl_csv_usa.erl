@@ -18,6 +18,8 @@
         , select_all_provinces/0
         ]).
 
+%% CSV data located at
+%% https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series
 -define(FILENAME_CONFIRMED_USA, "time_series_covid19_confirmed_US.csv").
 -define(FILENAME_DEATH_USA,     "time_series_covid19_deaths_US.csv").
 

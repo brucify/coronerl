@@ -1,0 +1,5 @@
+#!/bin/bash
+curl https://free.entryscape.com/store/360/resource/15 > time_series_region.csv
+
+# update coronerl
+curl -X POST --url localhost:8080/sweden --header 'Content-Type: application/json' --verbose
